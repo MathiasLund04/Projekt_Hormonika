@@ -124,6 +124,8 @@ public class AppointmentController {
                     description
             );
 
+            System.out.println(booking.toString());
+
             if (booking == null) {
                 errorChoiceLabel.setText("Tiden er optaget!");
                 return;

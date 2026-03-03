@@ -160,6 +160,7 @@ public class Booking {
            Tid: %s
            Behandling: %s
            Frisør: %d
+           Længde: %d
            Status: %s
            Note: %s
            -------------------------------
@@ -171,6 +172,7 @@ public class Booking {
                 time,
                 haircutType.getDescription(),
                 hairdresserId,
+                duration,
                 status.getDescription(),
                 description == null || description.isBlank() ? "-" : description
         );
