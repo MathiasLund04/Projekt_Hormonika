@@ -111,7 +111,7 @@ public class CalendarController {
 
     private void placeBooking(Booking b) {
 
-        int col = b.getHairdresserId() + 1; // 0 = Mads, 1 = Ida, osv.
+        int col = b.getHairdresserId();
 
         LocalTime dayStart = LocalTime.of(8, 0);
 
@@ -138,11 +138,11 @@ public class CalendarController {
 
     private String getColorForHairdresser(int id) {
         return switch (id) {
-            case 0 -> "#f4cccc"; // Mads
-            case 1 -> "#c9daf8"; // Ida
-            case 2 -> "#d9ead3"; // Fie
-            case 3 -> "#fff2cc"; // Mie
-            case 4 -> "#ead1dc"; // Monika
+            case 1 -> "#f4cccc"; // Mads
+            case 2 -> "#c9daf8"; // Ida
+            case 3 -> "#d9ead3"; // Fie
+            case 4 -> "#fff2cc"; // Mie
+            case 5 -> "#ead1dc"; // Monika
             default -> "#cccccc";
         };
     }

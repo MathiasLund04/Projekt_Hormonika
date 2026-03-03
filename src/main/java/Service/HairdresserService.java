@@ -58,8 +58,6 @@ public class HairdresserService {
             for (Hairdresser hd : existing) {
                 if (hd.getUsername().equals(username) && hd.getPassword().equals(password)) {
                     return Optional.of(hd);
-                } else {
-                    return Optional.empty();
                 }
             }
 

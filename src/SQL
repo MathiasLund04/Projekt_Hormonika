@@ -15,7 +15,6 @@ PhoneNUM Varchar(20) primary key
 
 CREATE TABLE Booking(
 id int primary key auto_increment,
-name Varchar(100),
 PhoneNum Varchar(20),
 Date date,
 Time time,
@@ -23,6 +22,8 @@ HaircutType enum('MANCUT', 'WOMANCUT', 'CHILDCUT', 'COLOUR', 'PERM', 'BEARD', 'O
 Hairdresser int,
 Description varchar(500),
 status enum('ACTIVE', 'CANCEL', 'FINISH'),
+cancelledAt date null,
+duration_Minutes int,
 foreign key(PhoneNum) references customer(PhoneNUM),
 foreign key(Hairdresser) references hairdresser(id)
 );

@@ -19,18 +19,19 @@ public class MySQLCustomerRepository implements CustomerRepository {
     }
 
     public void createCustomerIfNotExist(String name, String phoneNr) throws SQLException {
-        String sql = "INSERT INTO customers (name, phoneNr) VALUES (?, ?)";
+        String sql = "INSERT INTO customer (name, phoneNUM) VALUES (?, ?)";
             try(Connection c = db.getConnection();
                 PreparedStatement ps = c.prepareStatement(sql)) {
                 ps.setString(1, name);
                 ps.setString(2, phoneNr);
+                ps.executeUpdate();
             } catch (SQLException e){
                 throw new SQLException("Fejl i tilføjelse af Ny Kunde");
             }
     }
 
     public Optional<String> getCustomerNameByPhoneNr(String phoneNr) {
-        String  sql = "SELECT name FROM customers WHERE phoneNr = ?";
+        String  sql = "SELECT name FROM customer WHERE phoneNUM = ?";
         try(Connection c = db.getConnection();
             PreparedStatement ps = c.prepareStatement(sql)){
             ps.setString(1,phoneNr);
@@ -62,7 +63,7 @@ public class MySQLCustomerRepository implements CustomerRepository {
             }
             return customers;
         } catch (SQLException e) {
-            throw new SQLException("Fejl i indlæsning af kunder");
+            throw new SQLException("Kunne ikke indlæse kunder fra DB");
         }
 
     }

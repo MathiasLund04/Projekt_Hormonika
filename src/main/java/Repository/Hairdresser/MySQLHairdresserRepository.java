@@ -56,7 +56,7 @@ public class MySQLHairdresserRepository implements HairdresserRepository {
             return hairdressers;
 
         } catch (SQLException e) {
-            throw new SQLException("Fejl i indlæsning af kunder");
+            throw new SQLException("Kunne ikke indlæse frisører fra DB");
         }
 
     }

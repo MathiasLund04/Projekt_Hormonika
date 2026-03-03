@@ -17,6 +17,7 @@ public class Booking {
     private String hairdresserName;
     private String description;
     private Status status;
+    private int duration;
     //Konstruktør
     //+id og -Status
     public Booking(int id, String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
@@ -29,6 +30,7 @@ public class Booking {
         this.hairdresserId = hairdresserId;
         this.description = description;
         this.status = Status.ACTIVE;
+        this.duration = haircutType.getTime();
     }
     //-id og + status
     public Booking(String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description, Status status) {
@@ -40,9 +42,10 @@ public class Booking {
         this.hairdresserId = hairdresserId;
         this.description = description;
         this.status = status;
+        this.duration = haircutType.getTime();
     }
-    // int hairdresserId lavet om til String hairdresser
-    public Booking(int id, String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, String hairdresser, String description, Status status) {
+    // int hairdresserId lavet om til String hairdresser + duration tilføjet
+    public Booking(int id, String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, String hairdresser, String description, Status status, int duration) {
         this.id = id;
         this.name = name;
         this.phoneNr = phoneNr;
@@ -52,6 +55,7 @@ public class Booking {
         this.hairdresserName = hairdresser;
         this.description = description;
         this.status = status;
+        this.duration = duration;
     }
     //-id - status
     public Booking(String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
@@ -63,6 +67,7 @@ public class Booking {
         this.hairdresserId = hairdresserId;
         this.description = description;
         this.status = Status.ACTIVE;
+        this.duration = haircutType.getTime();
     }
 
 
@@ -130,6 +135,13 @@ public class Booking {
         this.description = description;
     }
 
+    public int getDuration() {
+        return duration;
+    }
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
     public Status getStatus(){
         return status;
     }
@@ -163,4 +175,5 @@ public class Booking {
                 description == null || description.isBlank() ? "-" : description
         );
     }
+
 }

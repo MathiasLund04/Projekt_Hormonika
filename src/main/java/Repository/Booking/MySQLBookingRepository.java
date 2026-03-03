@@ -23,10 +23,9 @@ public class MySQLBookingRepository implements BookingRepository {
         List<Booking> bookings = new ArrayList<>();
 
         String sql = """
-                    
                 SELECT
                        b.id,
-                       b.name AS booking_name,
+                       c.name AS customer_name,
                        b.PhoneNum,
                        b.Date,
                        b.Time,
@@ -35,8 +34,9 @@ public class MySQLBookingRepository implements BookingRepository {
                        b.Description,
                        b.status
                    FROM Booking b
-                   JOIN Hairdresser h ON b.Hairdresser = h.id;
-                    """;
+                   JOIN Hairdresser h ON b.Hairdresser = h.id
+                   JOIN Customer c ON b.customer = c.phoneNUM;
+                """;
 
         try (Connection con = db.getConnection();
             PreparedStatement ps = con.prepareStatement(sql);
@@ -44,7 +44,7 @@ public class MySQLBookingRepository implements BookingRepository {
 
             while (rs.next()) {
                 int id = rs.getInt("id");
-                String name = rs.getString("booking_name");
+                String name = rs.getString("customer_name");
                 String phoneNr = rs.getString("PhoneNum");
                 LocalDate date = rs.getDate("Date").toLocalDate();
                 LocalTime time = rs.getTime("Time").toLocalTime();
@@ -52,8 +52,9 @@ public class MySQLBookingRepository implements BookingRepository {
                 String hairdresser =  rs.getString("hairdresser_name");
                 String description = rs.getString("Description");
                 Status status = Status.valueOf(rs.getString("status"));
+                int duration_Minutes = rs.getInt("duration_Minutes");
 
-                Booking adding = new Booking(id, name, phoneNr, date, time, hairStyle, hairdresser, description, status);
+                Booking adding = new Booking(id, name, phoneNr, date, time, hairStyle, hairdresser, description, status, duration_Minutes);
                 bookings.add(adding);
             }
             return bookings;
@@ -66,19 +67,18 @@ public class MySQLBookingRepository implements BookingRepository {
     public void insertBooking(Booking booking) throws SQLException {
         String sql = """
             INSERT INTO Booking
-            (name, PhoneNum, Date, Time, HaircutType, Hairdresser, Description, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (PhoneNum, Date, Time, HaircutType, Hairdresser, Description, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """;
         try (Connection c = db.getConnection();
             PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setString(1, booking.getName());
-            ps.setString(2, booking.getPhoneNr());
-            ps.setObject(3, booking.getDate());
-            ps.setObject(4, booking.getTime());
-            ps.setString(5, booking.getHaircutType().name());
-            ps.setInt(6, booking.getHairdresserId());
-            ps.setString(7,booking.getDescription());
-            ps.setString(8,booking.getStatus().name());
+            ps.setString(1, booking.getPhoneNr());
+            ps.setObject(2, booking.getDate());
+            ps.setObject(3, booking.getTime());
+            ps.setString(4, booking.getHaircutType().name());
+            ps.setInt(5, booking.getHairdresserId());
+            ps.setString(6,booking.getDescription());
+            ps.setString(7,booking.getStatus().name());
             ps.executeUpdate();
 
         } catch (SQLException e){
@@ -90,7 +90,8 @@ public class MySQLBookingRepository implements BookingRepository {
         String sql = """
                 select booking.id, booking.name, booking.PhoneNum, booking.Date, booking.Time, booking.HaircutType, booking.Hairdresser, booking.Description, booking.status 
                 from booking 
-                inner join customer on customer.PhoneNUM = booking.PhoneNum
+                inner join customer on customer.PhoneNUM = booking.PhoneNum 
+                AND customer.name = booking.name
                 inner join hairdresser on hairdresser.ID = booking.Hairdresser
                 where booking.id = ?;
                 """;
@@ -123,48 +124,23 @@ public class MySQLBookingRepository implements BookingRepository {
         return null; //Returner anden besked?
     }
 
-    public void cancelBooking(Booking booking) throws SQLException{
+    public void updateStatus(int bookingID, Status status, LocalDate cancelledAt) throws SQLException{
         String sql = """
                 UPDATE booking
-                SET status = ?
-                WHERE booking.id = ?;
+                set status = ?,
+                cancelledAt = ?
+                where booking.id = ?;
         """;
+
 
         try (Connection conn = db.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, Status.CANCELLED.name()); //For at sikre at den tager den rigtige enum
-            ps.setInt(2, booking.getId());
-
-            int rows = ps.executeUpdate();
-            if (rows == 0){
-                throw new SQLException("Kunne ikke finde bookingen med id: " + booking.getId());
-            }
-
-        } catch (SQLException e){
-            throw new SQLException("Kunne ikke aflyse tidsbestilling"); //WIP
+            ps.setString(1, status.name());
+            ps.setDate(2, new java.sql.Date(cancelledAt.getDayOfMonth()));
+            ps.setInt(3, bookingID);
         }
     }
 
-    public void finishBooking(Booking booking) throws SQLException{
-        String sql = """
-                UPDATE booking
-                SET status = ?
-                WHERE booking.id = ?;
-        """;
-
-        try (Connection conn = db.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, Status.COMPLETED.name());
-            ps.setInt(2, booking.getId());
-
-            int rows = ps.executeUpdate();
-            if (rows == 0){
-                throw new SQLException("Kunne ikke færdiggøre tidsbestilling med id:  " + booking.getId());
-            }
-        } catch (SQLException e){
-            throw new SQLException("Kunne ikke færdiggøre tidsbestilling");
-        }
-    }
 
     public int highestId(){
         String sql = """
@@ -183,5 +159,53 @@ public class MySQLBookingRepository implements BookingRepository {
             throw new DataAccessException("Kunne ikke oprette id til denne booking");
         }
         return 0;
+    }
+
+    public List<Booking> findActive() throws SQLException{
+        String sql = """
+                SELECT
+                       b.id,
+                       c.name AS customer_name,
+                       b.PhoneNum,
+                       b.Date,
+                       b.Time,
+                       b.HaircutType,
+                       h.name AS hairdresser_name,
+                       b.Description,
+                       b.status,
+                       b.duration_Minutes
+                   FROM Booking b
+                   JOIN Hairdresser h ON b.Hairdresser = h.id 
+                   JOIN Customer c ON b.PhoneNUM = c.PhoneNum
+                   WHERE b.status = ?;
+                """;
+
+        List<Booking> bookings = new ArrayList<>();
+
+        try (Connection conn = db.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()){
+                ps.setString(1, Status.ACTIVE.name());
+
+                while (rs.next()){
+                    int id = rs.getInt("id");
+                    String name = rs.getString("customer_name");
+                    String phoneNr = rs.getString("PhoneNum");
+                    LocalDate date = rs.getDate("Date").toLocalDate();
+                    LocalTime time = rs.getTime("Time").toLocalTime();
+                    Haircuts hairStyle = Haircuts.valueOf(rs.getString("HaircutType"));
+                    String hairdresser =  rs.getString("hairdresser_name");
+                    String description = rs.getString("Description");
+                    Status status = Status.valueOf(rs.getString("status"));
+                    int duration_minutes = rs.getInt("duration_Minutes");
+
+                    Booking adding = new Booking(id, name, phoneNr, date, time, hairStyle, hairdresser, description, status, duration_minutes);
+                    bookings.add(adding);
+                }
+
+        } catch (SQLException e){
+            throw new SQLException("Kunne ikke finde aktive bookinger");
+        }
+        return bookings;
     }
 }
