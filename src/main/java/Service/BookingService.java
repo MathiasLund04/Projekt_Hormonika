@@ -65,19 +65,17 @@ public class BookingService {
         customerService.createCustomerIfNotExist(name, phoneNr);
 
         // Opret booking
-        int id;
+        /*int id;
 
-        try {
-            id = bRepo.highestId();
-            if (id == 0){
-                throw new DataAccessException("Kunne ikke finde id til opret");
-            }
-            id++;
-        } catch (SQLException e) {
-            throw new DataAccessException("Kunne ikke oprette et id til denne booking");
+        id = bRepo.highestId();
+        if (id == 0){
+            throw new DataAccessException("Kunne ikke finde id til opret");
         }
+           id++;
+         */
+
+
         Booking newBooking = new Booking(
-                id,
                 name,
                 phoneNr,
                 date,
@@ -130,7 +128,7 @@ public class BookingService {
             bRepo.insertBooking(booking);
             reload();
         } catch (SQLException e){
-            //Returner en besked i konsollen WIP
+            throw new DataAccessException("Kunne ikke indsætte booking i DB");//Returner en besked i konsollen WIP
         }
     }
 

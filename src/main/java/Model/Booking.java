@@ -53,8 +53,17 @@ public class Booking {
         this.description = description;
         this.status = status;
     }
-
-
+    //-id - status
+    public Booking(String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
+        this.name = name;
+        this.phoneNr = phoneNr;
+        this.date = date;
+        this.time = time;
+        this.haircutType = haircutType;
+        this.hairdresserId = hairdresserId;
+        this.description = description;
+        this.status = Status.ACTIVE;
+    }
 
 
     //Gettere og settere

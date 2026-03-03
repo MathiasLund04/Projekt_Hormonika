@@ -15,7 +15,7 @@ import java.util.Objects;
 
     public static void switchTo(ActionEvent event, String fxmlFileName) {
         try {
-            URL resource = SceneSwitcher.class.getResource("/" + fxmlFileName + ".fxml");
+            URL resource = SceneSwitcher.class.getResource(fxmlFileName + ".fxml");
             System.out.println(resource);
             FXMLLoader loader = new FXMLLoader(resource);
             Parent root = loader.load();

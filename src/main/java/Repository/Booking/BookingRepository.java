@@ -11,5 +11,5 @@ public interface BookingRepository {
     Booking getBookingById(int id);
     void cancelBooking(Booking booking) throws SQLException;
     void finishBooking(Booking booking) throws SQLException;
-    int highestId() throws SQLException;
+    int highestId();
 }

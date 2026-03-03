@@ -166,16 +166,21 @@ public class MySQLBookingRepository implements BookingRepository {
         }
     }
 
-    public int highestId() throws SQLException{
+    public int highestId(){
         String sql = """
                 SELECT max(booking.id) FROM booking;
         """;
         try (Connection conn = db.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql);
         ResultSet rs = ps.executeQuery()) {
-            if (rs.next()){
+            while (rs.next()){
+                    if (rs.getInt("id") == 0 ){
+                        return 1;
+                    }
                 return rs.getInt(1);
             }
+        } catch (SQLException e){
+            throw new DataAccessException("Kunne ikke oprette id til denne booking");
         }
         return 0;
     }
