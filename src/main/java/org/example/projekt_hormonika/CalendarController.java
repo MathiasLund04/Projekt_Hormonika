@@ -45,11 +45,11 @@ public class CalendarController {
     @FXML
     public void initialize() {
         datePicker.setValue(LocalDate.now());
-        buildCalendar();
 
         for (Hairdresser h : hairdresserService.getHairdressers()){
             employees.add(h.getName());
         }
+        buildCalendar();
         setLoggedInHairdresser();
 
     }

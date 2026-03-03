@@ -28,9 +28,9 @@ public class BookingService {
         CustomerRepository cRepo = new MySQLCustomerRepository(db);
         this.customerService = new CustomerService(cRepo,db);
         try {
-            calendar = new ArrayList<>(bRepo.getCalendar());
+            calendar = new ArrayList<>(bRepo.getActiveCalendar());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException("Fejl i indlæsning af DB: " + e.getMessage(), e);
         }
     }
 
@@ -107,7 +107,7 @@ public class BookingService {
     public void reload(){
         try {
             calendar.clear();
-            calendar.addAll(bRepo.getCalendar());
+            calendar.addAll(bRepo.getActiveCalendar());
         } catch (SQLException e) {
             throw new DataAccessException("Kunne ikke hente kalenderen fra DB");
         }

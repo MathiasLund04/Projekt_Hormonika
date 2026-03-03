@@ -8,10 +8,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingRepository {
-    List<Booking> getCalendar() throws SQLException;
+    List<Booking> getActiveCalendar() throws SQLException;
     void insertBooking(Booking booking) throws SQLException;
     Booking getBookingById(int id);
     int highestId();
-    List<Booking> findActive() throws SQLException;
+    List<Booking> findAll() throws SQLException;
     void updateStatus(int BookingID, Status status, LocalDate date) throws SQLException;
 }
