@@ -22,7 +22,7 @@ public class AppointmentController {
     @FXML private TextField customerName;
     @FXML private TextField phoneNumber;
     @FXML private DatePicker newAppointmentDataPicker;
-    @FXML private ComboBox<String> hairdresser;   // medarbejder
+    @FXML private ComboBox<Hairdresser> hairdresser;   // medarbejder
     @FXML private ComboBox<String> haircutTypeBox;  // tid
     @FXML private TextArea descriptionArea;
 
@@ -35,22 +35,21 @@ public class AppointmentController {
     @FXML private RadioButton other;
 
     @FXML private Label errorChoiceLabel;
+    @FXML private Label employeeLabel;
 
     private final DBConfig db = new DBConfig();
     private final BookingRepository bRepo = new MySQLBookingRepository(db);
-    private final BookingService bookingService =
-            new BookingService(bRepo, db);
+    private final BookingService bookingService = new BookingService(bRepo, db);
     private final HairdresserRepository hRepo = new MySQLHairdresserRepository(db);
-    private final HairdresserService hairdresserService =
-            new HairdresserService(hRepo, db);
+    private final HairdresserService hairdresserService = new HairdresserService(hRepo, db);
 
     @FXML
     public void initialize() {
 
         // Medarbejdere
-        for (Hairdresser h : hairdresserService.getHairdressers()) {
-            hairdresser.getItems().addAll(h.getName());
-        }
+        hairdresser.getItems().addAll(hairdresserService.getHairdressers());
+        employeeLabel.setText(LoginController.hairdresserName);
+
 
         // Tider (hver 15. minut)
         for (LocalTime t = LocalTime.of(8, 0); !t.isAfter(LocalTime.of(17, 0)); t = t.plusMinutes(15)) {
@@ -84,35 +83,29 @@ public class AppointmentController {
 
     @FXML
     private void onMakeNewAppointment(ActionEvent event) {
-        boolean running = false;
+
+        // Manuelt tjek for tomme felter
+        if (customerName.getText().isEmpty() ||
+                phoneNumber.getText().isEmpty() ||
+                newAppointmentDataPicker.getValue() == null ||
+                hairdresser.getValue() == null ||
+                haircutTypeBox.getValue() == null ||
+                getSelectedHairStyle() == null) {
+
+            errorChoiceLabel.setText("Udfyld alle felter.");
+            return;
+        }
+
         try {
             String name = customerName.getText();
-            System.out.println(name);
             String phone = phoneNumber.getText();
-            System.out.println(phone);
             LocalDate date = newAppointmentDataPicker.getValue();
-            System.out.println(date);
-            String employeeName = hairdresser.getValue();
-            System.out.println((employeeName));
             LocalTime time = LocalTime.parse(haircutTypeBox.getValue());
-            System.out.println((time));
             Haircuts haircut = getSelectedHairStyle();
-            System.out.println((haircut));
             String description = descriptionArea.getText();
-            System.out.println(description);
 
-
-            // Konverter medarbejdernavn → ID
-            int hairdresserId = switch (employeeName) {
-                case "Mads" -> 1;
-                case "Ida" -> 2;
-                case "Fie" -> 3;
-                case "Mie" -> 4;
-                case "Monika" -> 5;
-                default -> 0;
-            };
-
-            System.out.println("\n"+ hairdresserId);
+            Hairdresser selectedHairdresser = hairdresser.getValue();
+            int hairdresserId = selectedHairdresser.getId();   // NU: direkte fra objektet
 
             Booking booking = bookingService.createBooking(
                     name,
@@ -124,33 +117,32 @@ public class AppointmentController {
                     description
             );
 
-            System.out.println(booking.toString());
-
             if (booking == null) {
                 errorChoiceLabel.setText("Tiden er optaget!");
                 return;
             }
 
             errorChoiceLabel.setText("Booking oprettet!");
-            running = true;
+            bookingService.getActiveCalendar();
 
-
-        } catch (NullPointerException e) {
-            errorChoiceLabel.setText("Udfyld alle felter korrekt.");
-        }
-
-        if (running) {
             // Skift tilbage til kalenderen efter 1 sekund
             new Thread(() -> {
                 try {
                     Thread.sleep(1000);
-                    javafx.application.Platform.runLater(() -> {
-                        SceneSwitcher.switchTo(event, "Calendar-View");
-                    });
-                } catch (InterruptedException ignored) {
-                }
+                    javafx.application.Platform.runLater(() ->
+                            SceneSwitcher.switchTo(event, "Calendar-View")
+                    );
+                } catch (InterruptedException ignored) {}
             }).start();
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Lad den stå lidt, så du kan se evt. fejl i konsollen
+            errorChoiceLabel.setText("Udfyld alle felter korrekt.");
         }
+    }
+    @FXML
+    private void onBackPressed(ActionEvent event) {
+        SceneSwitcher.switchTo(event, "Calendar-View");
     }
 
 

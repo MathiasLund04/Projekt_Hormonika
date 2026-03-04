@@ -18,34 +18,37 @@ import java.util.List;
 public class BookingService {
     private final DBConfig db;
     private final BookingRepository bRepo;
+    private final CustomerRepository cRepo;
     private final CustomerService customerService;
+    private List<Booking> calendar;
 
-    private final List<Booking> calendar;
 
     public BookingService(BookingRepository bRepo, DBConfig db) {
         this.db = db;
         this.bRepo = bRepo;
-        CustomerRepository cRepo = new MySQLCustomerRepository(db);
-        this.customerService = new CustomerService(cRepo,db);
-        try {
-            calendar = new ArrayList<>(bRepo.getActiveCalendar());
-        } catch (SQLException e) {
-            throw new DataAccessException("Fejl i indlæsning af DB: " + e.getMessage(), e);
-        }
+        this.cRepo = new MySQLCustomerRepository(db);
+        this.customerService = new CustomerService(cRepo, db);
+        this.calendar = new ArrayList<>();
     }
 
-    public Booking createBooking(String name, String phoneNr, LocalDate date, LocalTime time,
+    // Hent kalender direkte fra databasen hver gang
+    public List<Booking> getActiveCalendar() {
+        reload();
+        return new ArrayList<>(calendar);
+    }
+
+    public Booking createBooking(String name, String phoneNum, LocalDate date, LocalTime time,
                                  Haircuts haircutType, int hairdresserId,
                                  String description) {
 
         // Validering
         if (!validateBookingTime(date, time, hairdresserId)) {
-            return null;
+            throw new IllegalArgumentException("Tidsbestilling kan ikke oprettes til dette tidspunkt");
         }
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Navn skal udfyldes");
         }
-        if (phoneNr == null || phoneNr.trim().isEmpty()) {
+        if (phoneNum == null || phoneNum.trim().isEmpty()) {
             throw new IllegalArgumentException("Telefonnummer skal udfyldes");
         }
         if (date == null) {
@@ -61,13 +64,18 @@ public class BookingService {
             throw new IllegalArgumentException("Frisør skal vælges");
         }
 
-        // Opret kunde hvis ny
-        customerService.createCustomerIfNotExist(name, phoneNr);
+        // Dobbeltbooking-check
+        if (!validateBookingTime(date, time, hairdresserId)) {
+            return null; // tiden er optaget
+        }
 
-        // Opret booking
+        // Opret kunde hvis ny
+        customerService.createCustomerIfNotExist(name, phoneNum);
+
+
         Booking newBooking = new Booking(
                 name,
-                phoneNr,
+                phoneNum,
                 date,
                 time,
                 haircutType,
@@ -75,74 +83,83 @@ public class BookingService {
                 description
         );
 
-        calendar.add(newBooking);
+        // Gem i databasen
         addBookingDB(newBooking);
+
         return newBooking;
     }
 
 
     //Validering til at sikre at en medarbejder ikke kan dobbeltbookes
     private boolean validateBookingTime(LocalDate date, LocalTime time, int hairdresserId){
-        for (Booking b : calendar) {
+        try {
+            for (Booking b : bRepo.getActiveCalendar()) {
 
-            boolean sameHairdresser = b.getHairdresserId() == hairdresserId;
-            boolean sameDate = b.getDate().equals(date);
-            boolean sameTime = b.getTime().equals(time);
-            //Ekstra for lige at tjekke at tidsbestillingen stadig er aktiv
-            boolean stillActive = b.getStatus().equals(Status.ACTIVE);
+                boolean sameHairdresser = b.getHairdresserId() == hairdresserId;
+                boolean sameDate = b.getDate().equals(date);
+                boolean sameTime = b.getTime().equals(time);
+                boolean stillActive = b.getStatus() == Status.ACTIVE;
 
-            if (sameHairdresser && sameDate && sameTime && stillActive){
-                //Dette fortæller at frisøren allerede er booket på denne tid (til en der stadig er aktiv)
-                return false;
+                if (sameHairdresser && sameDate && sameTime && stillActive) {
+                    return false;
+                }
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Kunne ikke validere bookingtid", e);
         }
+
         return true;
     }
 
-    public List<Booking> getCalendar(){
-        reload();
-        return new ArrayList<>(calendar);
+    public void addBookingDB(Booking booking) {
+        try {
+            bRepo.insertBooking(booking);
+        } catch (SQLException e) {
+            throw new RuntimeException("Kunne ikke indsætte booking i databasen", e);
+        }
     }
 
-    public void reload(){
+
+    public void cancelBookingDB(Booking booking) {
+        try {
+            bRepo.cancelBooking(booking);
+        } catch (SQLException e) {
+            throw new RuntimeException("Kunne ikke annullere booking", e);
+        }
+    }
+
+    public void finishBookingDB(Booking booking) {
+        try {
+            bRepo.finishBooking(booking);
+        } catch (SQLException e) {
+            throw new RuntimeException("Kunne ikke afslutte booking", e);
+        }
+    }
+
+    public void updateBooking(Booking booking) {
+        try {
+            bRepo.updateBooking(booking);
+        } catch (SQLException e) {
+            throw new RuntimeException("Kunne ikke opdatere booking", e);
+        }
+    }
+
+    //Opdatere listen med kalenderen
+    private void reload(){
         try {
             calendar.clear();
             calendar.addAll(bRepo.getActiveCalendar());
         } catch (SQLException e) {
-            throw new DataAccessException("Kunne ikke hente kalenderen fra DB");
+            throw new DataAccessException("Kunne ikke hente kalenderen fra DB: " + e.getMessage(), e);
         }
     }
 
-    public void addBookingDB(Booking booking){
+    public Booking getBookingByIdDB(int id) {
         try {
-            bRepo.insertBooking(booking);
-            reload();
+            return bRepo.getBookingById(id);
         } catch (SQLException e){
-            throw new DataAccessException("Kunne ikke indsætte booking i DB");//Returner en besked i konsollen WIP
+            throw new DataAccessException("Kunne ikke hente Bookingen fra DB: " + e.getMessage(), e);
         }
     }
-
-    public void cancelBookingDB(Booking booking){
-        try {
-            LocalDate endDate = LocalDate.now();
-            Status cancel = Status.CANCELLED;
-            bRepo.updateStatus(booking.getId(), cancel, endDate);
-            reload();
-        } catch (SQLException e){
-            //WIP
-        }
-    }
-
-    public void finishBookingDB(Booking booking){
-        try {
-            LocalDate endDate = LocalDate.now();
-            Status end = Status.COMPLETED;
-            bRepo.updateStatus(booking.getId(), end, endDate);
-            reload();
-        } catch (SQLException e){
-            //WIP
-        }
-    }
-
 
 }

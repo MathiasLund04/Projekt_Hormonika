@@ -12,51 +12,46 @@ import java.util.List;
 public class CustomerService {
     private DBConfig db;
     private final CustomerRepository cRepo;
-    private List<Customer> customers;
+    private List<Customer> customer;
 
 
     public CustomerService(CustomerRepository cRepo, DBConfig db) {
         this.db = db;
         this.cRepo = cRepo;
         try {
-            customers = new ArrayList<>(cRepo.getCustomers());
-        } catch (SQLException e) {
+            customer = new ArrayList<>(cRepo.getCustomer());
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    public Customer findCustomer(String name, String phoneNr) {
-        for (Customer c : customers) {
-            if (c.getName().equals(name) && c.getPhoneNum().equals(phoneNr)) {
+    public Customer findCustomer(String name, String phoneNum) {
+        for (Customer c : customer) {
+            if (c.getName().equals(name) && c.getPhoneNum().equals(phoneNum)) {
                 return c;
             }
         }
         return null;
     }
 
-    public Customer createCustomerIfNotExist(String name, String phoneNr) {
-        Customer existingCustomer = findCustomer(name, phoneNr);
+    public Customer createCustomerIfNotExist(String name, String phoneNum) {
+        Customer existingCustomer = findCustomer(name, phoneNum);
         if (existingCustomer != null) {
             return existingCustomer;
         }
 
-        Customer newCustomer = new Customer(name, phoneNr);
-        customers.add(newCustomer);
+        Customer newCustomer = new Customer(name, phoneNum);
+        customer.add(newCustomer);
         try {
-            cRepo.createCustomerIfNotExist(name, phoneNr);
+            cRepo.createCustomerIfNotExist(name, phoneNum);
         } catch (SQLException e){
             throw new DataAccessException("Kunne ikke oprette kunde i database");
         }
         return newCustomer;
     }
 
-    public List<Customer> getCustomers() {
-        try {
-            cRepo.getCustomers();
-        } catch (SQLException e){
-            throw new DataAccessException("Kunne ikke indlæse kunder fra DB");
-        }
-        return new ArrayList<>(customers);
+    public List<Customer> getCustomer() {
+        return new ArrayList<>(customer);
     }
 }

@@ -21,4 +21,9 @@ public enum Haircuts {
     public int getTime() {
         return time;
     }
+
+    @Override
+    public String toString() {
+        return description;
+    }
 }

@@ -31,5 +31,3 @@ foreign key(Hairdresser) references hairdresser(id)
 insert into hairdresser(name, Username, password)
 values ('Mads','Mads123','Mads321'), ('Ida','Ida123','Ida321'), ('Fie','Fie123','Fie321'), ('Mie','Mie123','Mie321'), ('Monika','Monika123','Monika321');
 
-insert into customer(name,PhoneNUM)
-values('Bob', 11223344);

@@ -10,43 +10,43 @@
         <DatePicker fx:id="newAppointmentDataPicker" layoutX="239.0" layoutY="35.0" prefHeight="35.0" prefWidth="341.0" />
         <TextField fx:id="phoneNumber" layoutX="28.0" layoutY="160.0" prefHeight="45.0" prefWidth="188.0" promptText="Indtast: Telefon nr." />
         <TextField fx:id="customerName" layoutX="28.0" layoutY="101.0" prefHeight="45.0" prefWidth="188.0" promptText="Indtast: Navn" />
-        <RadioButton fx:id="womanCut" layoutX="28.0" layoutY="345.0" mnemonicParsing="false" prefHeight="24.0" prefWidth="112.0" text="Dame Klip">
+        <RadioButton fx:id="womanCut" layoutX="28.0" layoutY="344.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Dame Klip">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
-        <RadioButton fx:id="manCut" layoutX="28.0" layoutY="370.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Herre Klip">
+        <RadioButton fx:id="manCut" layoutX="28.0" layoutY="365.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Herre Klip">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
-        <RadioButton fx:id="childCut" layoutX="28.0" layoutY="395.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Børne Klip">
+        <RadioButton fx:id="childCut" layoutX="28.0" layoutY="390.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Børne Klip">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
-        <RadioButton fx:id="beard" layoutX="28.0" layoutY="420.0" mnemonicParsing="false" text="Skægtrimning">
+        <RadioButton fx:id="beard" layoutX="28.0" layoutY="415.0" mnemonicParsing="false" text="Skægtrimning">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
-        <RadioButton fx:id="perm" layoutX="28.0" layoutY="445.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Perm">
+        <RadioButton fx:id="perm" layoutX="28.0" layoutY="440.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Perm">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
-        <RadioButton fx:id="colour" layoutX="28.0" layoutY="470.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="111.0" text="Favning">
+        <RadioButton fx:id="colour" layoutX="28.0" layoutY="465.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Favning">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
-        <RadioButton fx:id="other" layoutX="28.0" layoutY="495.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="111.0" text="Andet">
+        <RadioButton fx:id="other" layoutX="28.0" layoutY="490.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="112.0" text="Andet">
             <font>
                 <Font size="14.0" />
             </font>
         </RadioButton>
         <Label fx:id="errorChoiceLabel" layoutX="28.0" layoutY="528.0" prefHeight="52.0" prefWidth="188.0" textFill="red" />
-        <Label fx:id="employeeLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="26.0" layoutY="35.0" prefHeight="45.0" prefWidth="103.0" style="-fx-background-color: #afc6bc; -fx-background-radius: 5; -fx-border-color: #879f94; -fx-border-width: 2; -fx-border-radius: 5;" text="Fie" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
+        <Label fx:id="employeeLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="28.0" layoutY="15.0" prefHeight="45.0" prefWidth="103.0" style="-fx-background-color: #afc6bc; -fx-background-radius: 5; -fx-border-color: #879f94; -fx-border-width: 2; -fx-border-radius: 5;" text="Fie" textAlignment="CENTER" textOverrun="CENTER_ELLIPSIS" />
         <ComboBox fx:id="haircutTypeBox" layoutX="28.0" layoutY="278.0" prefHeight="45.0" prefWidth="188.0" promptText="Tid" />
         <TextArea fx:id="descriptionArea" layoutX="239.0" layoutY="332.0" prefHeight="164.0" prefWidth="341.0" promptText="Her kan du beskrive hvilken service du ønsker:">
             <font>
@@ -58,5 +58,6 @@
                 <Font name="System Bold" size="18.0" />
             </font>
         </Button>
+      <Button layoutX="28.0" layoutY="66.0" mnemonicParsing="false" onAction="#onBackPressed" prefHeight="25.0" prefWidth="57.0" text="Tilbage" />
     </children>
 </AnchorPane>

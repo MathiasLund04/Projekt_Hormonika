@@ -31,40 +31,46 @@ public class MySQLBookingRepository implements BookingRepository {
                        b.Time,
                        b.HaircutType,
                        h.name AS hairdresser_name,
+                       b.hairdresser,
                        b.Description,
                        b.status,
                        b.duration_Minutes
-                   FROM Booking b
-                   JOIN Hairdresser h ON b.Hairdresser = h.id
-                   JOIN Customer c ON b.PhoneNum = c.phoneNUM
-                    Where b.status = 'ACTIVE';
+                    FROM Booking b
+                    JOIN Hairdresser h ON b.Hairdresser = h.id
+                    JOIN Customer c ON b.PhoneNum = c.PhoneNUM
+                    WHERE b.status = 'ACTIVE';
                 """;
 
         try (Connection con = db.getConnection();
-            PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery()) {
-
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
+
                 int id = rs.getInt("id");
                 String name = rs.getString("customer_name");
-                String phoneNr = rs.getString("PhoneNum");
+                String phone = rs.getString("PhoneNum");
                 LocalDate date = rs.getDate("Date").toLocalDate();
                 LocalTime time = rs.getTime("Time").toLocalTime();
-                Haircuts hairStyle = Haircuts.valueOf(rs.getString("HaircutType"));
-                String hairdresser =  rs.getString("hairdresser_name");
+                Haircuts haircut = Haircuts.valueOf(rs.getString("HaircutType"));
+                String hairdresser = rs.getString("hairdresser_name");
+                int hairdresserId = rs.getInt("hairdresser");
                 String description = rs.getString("Description");
-                Status status = Status.valueOf(rs.getString("status"));
-                int duration_Minutes = rs.getInt("duration_Minutes");
 
-                Booking adding = new Booking(id, name, phoneNr, date, time, hairStyle, hairdresser, description, status, duration_Minutes);
-                bookings.add(adding);
+                // Map database status → Java enum
+                Status status = switch (rs.getString("status")) {
+                    case "ACTIVE" -> Status.ACTIVE;
+                    case "CANCEL" -> Status.CANCELLED;
+                    case "FINISH" -> Status.COMPLETED;
+                    default -> Status.ACTIVE;
+                };
+
+                bookings.add(new Booking(id, name, phone, date, time, haircut, hairdresserId, hairdresser, description, status));
             }
-            return bookings;
-
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            throw ex;
+        } catch (SQLException e) {
+            throw new SQLException("Kunne ikke hente aktive tidsbestillinger: " + e);
         }
+
+        return bookings;
     }
 
     public void insertBooking(Booking booking) throws SQLException {
@@ -75,66 +81,97 @@ public class MySQLBookingRepository implements BookingRepository {
             """;
         try (Connection c = db.getConnection();
             PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setString(1, booking.getPhoneNr());
-            ps.setObject(2, booking.getDate());
-            ps.setObject(3, booking.getTime());
+
+            ps.setString(1, booking.getPhoneNum());
+            ps.setDate(2, Date.valueOf(booking.getDate()));
+            ps.setTime(3, Time.valueOf(booking.getTime()));
             ps.setString(4, booking.getHaircutType().name());
             ps.setInt(5, booking.getHairdresserId());
-            ps.setString(6,booking.getDescription());
-            ps.setString(7,booking.getStatus().name());
+            ps.setString(6, booking.getDescription());
+
+            // Map Java enum → database enum
+            String dbStatus = switch (booking.getStatus()) {
+                case ACTIVE -> "ACTIVE";
+                case CANCELLED -> "CANCEL";
+                case COMPLETED -> "FINISH";
+            };
+
+            ps.setString(7, dbStatus);
             ps.setInt(8,booking.getHaircutType().getTime());
             ps.executeUpdate();
 
-        } catch (SQLException e){
-            throw new SQLException("Fejl i tilføjelse af tidsbestilling"); //WIP
+        } catch (SQLException e) {
+            throw new SQLException("Fejl i tilføjelse af tidsbestilling: " + e.getMessage());
         }
     }
 
-    public Booking getBookingById(int id) {
+    public Booking getBookingById(int id) throws SQLException {
         String sql = """
-                SELECT
+                    SELECT
                        c.name AS customer_name,
                        b.PhoneNum,
                        b.Date,
                        b.Time,
                        b.HaircutType,
-                       h.name AS hairdresser_name,
+                       b.Hairdresser,
                        b.Description,
                        b.status,
                        b.duration_Minutes
-                   FROM Booking b
-                   JOIN Hairdresser h ON b.Hairdresser = h.id
-                   JOIN Customer c ON b.PhoneNum = c.phoneNUM
-                   WHERE b.id = ?;
-                """;
+                    FROM Booking b
+                    JOIN Customer c ON b.PhoneNum = c.PhoneNUM
+                    WHERE b.id = ?;
+        """;
 
         try (Connection conn = db.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    String name = rs.getString("customer_name");
-                    String phoneNum = rs.getString("phoneNum");
-                    LocalDate date = rs.getDate("date").toLocalDate();
-                    LocalTime time = rs.getTime("time").toLocalTime();
-                    Haircuts haircutType = Haircuts.valueOf(rs.getString("HaircutType"));
-                    String hairdresser = rs.getString("hairdresser_name");
-                    String description = rs.getString("Description");
-                    Status status = Status.valueOf(rs.getString("status"));
-                    int duration = rs.getInt("duration_Minutes");
+                if (rs.next()) {
 
-                    Booking resultat = new Booking(id, name, phoneNum, date, time, haircutType, hairdresser, description, status, duration);
-                    return resultat;
+                    String name = rs.getString("customer_name");
+                    String phone = rs.getString("PhoneNum");
+                    LocalDate date = rs.getDate("Date").toLocalDate();
+                    LocalTime time = rs.getTime("Time").toLocalTime();
+                    Haircuts haircut = Haircuts.valueOf(rs.getString("HaircutType"));
+                    int hairdresserId = rs.getInt("Hairdresser");
+                    String description = rs.getString("Description");
+
+                    Status status = switch (rs.getString("status")) {
+                        case "ACTIVE" -> Status.ACTIVE;
+                        case "CANCEL" -> Status.CANCELLED;
+                        case "FINISH" -> Status.COMPLETED;
+                        default -> Status.ACTIVE;
+                    };
+
+                    return new Booking(id, name, phone, date, time, haircut, hairdresserId, description, status);
                 }
-            } catch (SQLException e){
-                throw new SQLException("Kunne ikke indlæse data");
             }
 
-            } catch (SQLException e){
-            throw new DataAccessException("Kunne ikke finde bookingen!" + e);
+        } catch (SQLException e) {
+            throw new DataAccessException("Kunne ikke finde booking med id " + id + ": " + e.getMessage());
         }
-        return null; //Returner anden besked?
+
+        return null;
+    }
+
+    public void cancelBooking(Booking booking) throws SQLException {
+        String sql = """
+            UPDATE Booking
+            SET status = 'CANCEL'
+            WHERE id = ?
+        """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, booking.getId());
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new SQLException("Kunne ikke aflyse tidsbestilling: " + e.getMessage());
+        }
     }
 
     public void updateStatus(int bookingID, Status status, LocalDate cancelledAt) throws SQLException{
@@ -154,69 +191,65 @@ public class MySQLBookingRepository implements BookingRepository {
         }
     }
 
-
-    public int highestId(){
+    public void finishBooking(Booking booking) throws SQLException {
         String sql = """
-                SELECT max(booking.id) FROM booking;
+            UPDATE Booking
+            SET status = 'FINISH'
+            WHERE id = ?
         """;
+
         try (Connection conn = db.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery()) {
-            while (rs.next()){
-                    if (rs.getInt("id") == 0 ){
-                        return 1;
-                    }
-                return rs.getInt(1);
-            }
-        } catch (SQLException e){
-            throw new DataAccessException("Kunne ikke oprette id til denne booking");
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, booking.getId());
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new SQLException("Kunne ikke færdiggøre tidsbestilling: " + e.getMessage());
         }
+    }
+
+    public int highestId() throws SQLException {
+        String sql = "SELECT COALESCE(MAX(id), 0) AS maxId FROM Booking";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("maxId");
+            }
+        }
+
         return 0;
     }
 
-    public List<Booking> findAll() throws SQLException{
+    public void updateBooking(Booking booking) throws SQLException {
         String sql = """
-                SELECT
-                       b.id,
-                       c.name AS customer_name,
-                       b.PhoneNum,
-                       b.Date,
-                       b.Time,
-                       b.HaircutType,
-                       h.name AS hairdresser_name,
-                       b.Description,
-                       b.status,
-                       b.duration_Minutes
-                   FROM Booking b
-                   JOIN Hairdresser h ON b.Hairdresser = h.id 
-                   JOIN Customer c ON b.PhoneNum = c.phoneNUM;
-                """;
-
-        List<Booking> bookings = new ArrayList<>();
+            UPDATE Booking
+            SET Date=?, Time=?, HaircutType=?, Hairdresser=?, Description=?, status=?
+            WHERE id=?
+        """;
 
         try (Connection conn = db.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery()){
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                while (rs.next()){
-                    int id = rs.getInt("id");
-                    String name = rs.getString("customer_name");
-                    String phoneNr = rs.getString("PhoneNum");
-                    LocalDate date = rs.getDate("Date").toLocalDate();
-                    LocalTime time = rs.getTime("Time").toLocalTime();
-                    Haircuts hairStyle = Haircuts.valueOf(rs.getString("HaircutType"));
-                    String hairdresser =  rs.getString("hairdresser_name");
-                    String description = rs.getString("Description");
-                    Status status = Status.valueOf(rs.getString("status"));
-                    int duration_minutes = rs.getInt("duration_Minutes");
+            stmt.setDate(1, Date.valueOf(booking.getDate()));
+            stmt.setTime(2, Time.valueOf(booking.getTime()));
+            stmt.setString(3, booking.getHaircutType().name());
+            stmt.setInt(4, booking.getHairdresserId());
+            stmt.setString(5, booking.getDescription());
 
-                    Booking adding = new Booking(id, name, phoneNr, date, time, hairStyle, hairdresser, description, status, duration_minutes);
-                    bookings.add(adding);
-                }
+            String dbStatus = switch (booking.getStatus()) {
+                case ACTIVE -> "ACTIVE";
+                case CANCELLED -> "CANCEL";
+                case COMPLETED -> "FINISH";
+            };
 
-        } catch (SQLException e){
-            throw new SQLException("Kunne ikke finde aktive bookinger");
+            stmt.setString(6, dbStatus);
+            stmt.setInt(7, booking.getId());
+
+            stmt.executeUpdate();
         }
-        return bookings;
     }
 }

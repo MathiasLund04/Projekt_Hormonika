@@ -41,13 +41,15 @@ public class HairdresserService {
         hairdressers.add(hairdresser);
         //WIP
     }
-    public Optional<Hairdresser> getHairdresserById(int id) {
-        for (Hairdresser hd : hairdressers) {
-            if (hd.getId() == id) {
-                return Optional.of(hd);
-            }
+    public Hairdresser getHairdresserById(int id) {
+
+        Hairdresser hairdresser;
+        try {
+            hairdresser = hRepo.getHairdresserById(id);
+        } catch (SQLException e) {
+            throw new DataAccessException("Kunne ikke hente frisør med id: " + id);
         }
-        return Optional.empty();
+        return hairdresser;
     }
 
     // Login Metode

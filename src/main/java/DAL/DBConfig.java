@@ -4,16 +4,15 @@ import Exceptions.DataAccessException;
 
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class DBConfig {
 
-    private String url;
-    private String user;
-    private String pass;
+    private final String url;
+    private final String user;
+    private final String pass;
 
     public DBConfig(){
         Properties prop = new Properties();

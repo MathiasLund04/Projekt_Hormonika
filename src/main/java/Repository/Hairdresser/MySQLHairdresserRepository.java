@@ -19,6 +19,31 @@ public class MySQLHairdresserRepository implements HairdresserRepository {
         this.db = db;
     }
 
+    public Hairdresser getHairdresserById(int id) throws SQLException {
+        String sql = "SELECT * FROM Hairdresser WHERE id = ?";
+
+        Hairdresser hairdresser;
+        try (Connection conn = db.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()){
+                if (rs.next()){
+
+                    String name = rs.getString("name");
+                    String username = rs.getString("Username");
+                    String password = rs.getString("Password");
+
+                    hairdresser = new Hairdresser(name, id, username, password);
+
+
+                    return hairdresser;
+                }
+            }
+        }
+        return null;
+    }
+
     public Optional<String> getHairdresserNameById(int id) throws SQLException {
         String sql = "SELECT name FROM hairdresser WHERE id = ?";
 

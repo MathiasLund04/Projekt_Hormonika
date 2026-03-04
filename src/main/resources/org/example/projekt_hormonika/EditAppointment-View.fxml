@@ -1,14 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.projekt_hormonika.EditAppointmentController"
-            prefHeight="400.0" prefWidth="600.0">
+<AnchorPane maxHeight="600.0" maxWidth="600.0" minHeight="600.0" minWidth="600.0"
+            prefHeight="600.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/24.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.projekt_hormonika.EditAppointmentController">
+
+    <children>
+
+        <!-- Frisør navn -->
+        <Label fx:id="employeeLabel" alignment="CENTER" contentDisplay="CENTER"
+               layoutX="26.0" layoutY="35.0"
+               prefHeight="45.0" prefWidth="103.0"
+               style="-fx-background-color: #afc6bc; -fx-background-radius: 5;
+                      -fx-border-color: #879f94; -fx-border-width: 2; -fx-border-radius: 5;"
+               text="Frisør" />
+
+        <!-- Dato -->
+        <DatePicker fx:id="datePicker"
+                    layoutX="239.0" layoutY="35.0"
+                    prefHeight="35.0" prefWidth="341.0" />
+
+        <!-- Navn -->
+        <TextField fx:id="nameField"
+                   layoutX="28.0" layoutY="101.0"
+                   prefHeight="45.0" prefWidth="188.0"
+                   promptText="Navn" />
+
+        <!-- Telefon -->
+        <TextField fx:id="phoneField"
+                   layoutX="28.0" layoutY="160.0"
+                   prefHeight="45.0" prefWidth="188.0"
+                   promptText="Telefon nr." />
+
+        <!-- Frisør -->
+        <ComboBox fx:id="hairdresserBox"
+                  layoutX="28.0" layoutY="220.0"
+                  prefHeight="45.0" prefWidth="188.0"
+                  promptText="Medarbejder" />
+
+        <!-- Tidspunkt -->
+        <ComboBox fx:id="timeBox"
+                  layoutX="28.0" layoutY="278.0"
+                  prefHeight="45.0" prefWidth="188.0"
+                  promptText="Tidspunkt" />
+
+        <!-- Behandling -->
+        <ComboBox fx:id="haircutTypeBox"
+                  layoutX="28.0" layoutY="336.0"
+                  prefHeight="45.0" prefWidth="188.0"
+                  promptText="Behandling" />
+
+        <!-- Note -->
+        <TextArea fx:id="noteField"
+                  layoutX="239.0" layoutY="332.0"
+                  prefHeight="164.0" prefWidth="341.0"
+                  promptText="Beskrivelse / note">
+            <font>
+                <Font size="14.0" />
+            </font>
+        </TextArea>
+
+        <!-- Gem -->
+        <Button text="Gem ændringer"
+                layoutX="238.0" layoutY="512.0"
+                prefHeight="72.0" prefWidth="342.0"
+                onAction="#onSave"
+                style="-fx-background-color: #afc6bc; -fx-background-radius: 5;
+                       -fx-border-color: #879f94; -fx-border-width: 2; -fx-border-radius: 5;">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Button>
+
+        <!-- Slet -->
+        <Button text="Slet booking"
+                layoutX="28.0" layoutY="512.0"
+                prefHeight="72.0" prefWidth="188.0"
+                onAction="#onDelete"
+                style="-fx-background-color: #d9534f; -fx-background-radius: 5;
+                       -fx-border-color: #b52b27; -fx-border-width: 2; -fx-border-radius: 5;">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Button>
+
+    </children>
 
 </AnchorPane>

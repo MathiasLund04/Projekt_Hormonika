@@ -9,7 +9,7 @@ import java.time.LocalTime;
 public class Booking {
     private int id;
     private String name;
-    private String phoneNr;
+    private String phoneNum;
     private LocalDate date;
     private LocalTime time;
     private Haircuts haircutType;
@@ -18,12 +18,13 @@ public class Booking {
     private String description;
     private Status status;
     private int duration;
+
     //Konstruktør
     //+id og -Status
-    public Booking(int id, String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
+    public Booking(int id, String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
         this.id = id;
         this.name = name;
-        this.phoneNr = phoneNr;
+        this.phoneNum = phoneNum;
         this.date = date;
         this.time = time;
         this.haircutType = haircutType;
@@ -33,9 +34,9 @@ public class Booking {
         this.duration = haircutType.getTime();
     }
     //-id og + status
-    public Booking(String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description, Status status) {
+    public Booking(String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description, Status status) {
         this.name = name;
-        this.phoneNr = phoneNr;
+        this.phoneNum = phoneNum;
         this.date = date;
         this.time = time;
         this.haircutType = haircutType;
@@ -45,10 +46,10 @@ public class Booking {
         this.duration = haircutType.getTime();
     }
     // int hairdresserId lavet om til String hairdresser + duration tilføjet
-    public Booking(int id, String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, String hairdresser, String description, Status status, int duration) {
+    public Booking(int id, String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType, String hairdresser, String description, Status status, int duration) {
         this.id = id;
         this.name = name;
-        this.phoneNr = phoneNr;
+        this.phoneNum = phoneNum;
         this.date = date;
         this.time = time;
         this.haircutType = haircutType;
@@ -58,15 +59,55 @@ public class Booking {
         this.duration = duration;
     }
     //-id - status
-    public Booking(String name, String phoneNr, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
+    public Booking(String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description) {
         this.name = name;
-        this.phoneNr = phoneNr;
+        this.phoneNum = phoneNum;
         this.date = date;
         this.time = time;
         this.haircutType = haircutType;
         this.hairdresserId = hairdresserId;
         this.description = description;
         this.status = Status.ACTIVE;
+        this.duration = haircutType.getTime();
+    }
+    //+ id + status
+    public Booking(int id, String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType, int hairdresserId, String description, Status status) {
+        this.id = id;
+        this.name = name;
+        this.phoneNum = phoneNum;
+        this.date = date;
+        this.time = time;
+        this.haircutType = haircutType;
+        this.hairdresserId = hairdresserId;
+        this.description = description;
+        this.status = status;
+        this.duration = haircutType.getTime();
+    }
+    //+ id + status + String hairdresser
+    public Booking(int id, String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType, String hairdresserName, String description, Status status) {
+        this.id = id;
+        this.name = name;
+        this.phoneNum = phoneNum;
+        this.date = date;
+        this.time = time;
+        this.haircutType = haircutType;
+        this.hairdresserName = hairdresserName;
+        this.description = description;
+        this.status = status;
+        this.duration = haircutType.getTime();
+    }
+
+    public Booking(int id, String name, String phoneNum, LocalDate date, LocalTime time, Haircuts haircutType,  int hairdresserId,String hairdresserName, String description, Status status) {
+        this.id = id;
+        this.name = name;
+        this.phoneNum = phoneNum;
+        this.date = date;
+        this.time = time;
+        this.haircutType = haircutType;
+        this.hairdresserId = hairdresserId;
+        this.hairdresserName = hairdresserName;
+        this.description = description;
+        this.status = status;
         this.duration = haircutType.getTime();
     }
 
@@ -86,11 +127,11 @@ public class Booking {
         this.name = name;
     }
 
-    public String getPhoneNr(){
-        return phoneNr;
+    public String getPhoneNum(){
+        return phoneNum;
     }
-    public void setPhoneNr(String phoneNr){
-        this.phoneNr = phoneNr;
+    public void setPhoneNum(String phoneNr){
+        this.phoneNum = phoneNr;
     }
 
     public LocalDate getDate(){
@@ -167,7 +208,7 @@ public class Booking {
            """.formatted(
                 id,
                 name,
-                phoneNr,
+                phoneNum,
                 date,
                 time,
                 haircutType.getDescription(),
@@ -177,5 +218,4 @@ public class Booking {
                 description == null || description.isBlank() ? "-" : description
         );
     }
-
 }

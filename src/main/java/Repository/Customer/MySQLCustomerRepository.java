@@ -18,23 +18,23 @@ public class MySQLCustomerRepository implements CustomerRepository {
         this.db = db;
     }
 
-    public void createCustomerIfNotExist(String name, String phoneNr) throws SQLException {
+    public void createCustomerIfNotExist(String name, String phoneNum) throws SQLException {
         String sql = "INSERT INTO customer (name, phoneNUM) VALUES (?, ?)";
             try(Connection c = db.getConnection();
                 PreparedStatement ps = c.prepareStatement(sql)) {
                 ps.setString(1, name);
-                ps.setString(2, phoneNr);
+                ps.setString(2, phoneNum);
                 ps.executeUpdate();
             } catch (SQLException e){
                 throw new SQLException("Fejl i tilføjelse af Ny Kunde");
             }
     }
 
-    public Optional<String> getCustomerNameByPhoneNr(String phoneNr) {
+    public Optional<String> getCustomerNameByPhoneNum(String phoneNum) {
         String  sql = "SELECT name FROM customer WHERE phoneNUM = ?";
         try(Connection c = db.getConnection();
             PreparedStatement ps = c.prepareStatement(sql)){
-            ps.setString(1,phoneNr);
+            ps.setString(1,phoneNum);
             try(ResultSet rs = ps.executeQuery()){
                 if(rs.next()){
                     return Optional.ofNullable(rs.getString("name"));
@@ -46,7 +46,7 @@ public class MySQLCustomerRepository implements CustomerRepository {
         return Optional.empty();
     }
 
-    public List<Customer> getCustomers() throws SQLException {
+    public List<Customer> getCustomer() throws SQLException {
         List<Customer> customers = new ArrayList<>();
 
         String sql = "SELECT * FROM customer";
@@ -58,8 +58,8 @@ public class MySQLCustomerRepository implements CustomerRepository {
                 String name = rs.getString("name");
                 String phoneNr = rs.getString("PhoneNUM");
 
-                Customer customer = new Customer(name,phoneNr);
-                customers.add(customer);
+                Customer newCustomer = new Customer(name,phoneNr);
+                customers.add(newCustomer);
             }
             return customers;
         } catch (SQLException e) {
