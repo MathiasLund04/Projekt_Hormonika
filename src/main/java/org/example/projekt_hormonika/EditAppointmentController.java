@@ -123,7 +123,7 @@ public class EditAppointmentController {
 
 
     @FXML
-    private void onDelete() {
+    private void onDelete(ActionEvent event) {
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setHeaderText("Slet booking?");
@@ -132,12 +132,13 @@ public class EditAppointmentController {
         confirm.showAndWait().ifPresent(btn -> {
             if (btn == ButtonType.OK) {
 
-                booking.getStatus();
                 bookingService.cancelBookingDB(booking);
 
                 Alert done = new Alert(Alert.AlertType.INFORMATION);
                 done.setHeaderText("Booking slettet");
                 done.showAndWait();
+
+                SceneSwitcher.switchTo(event, "Calendar-View");
             }
         });
     }

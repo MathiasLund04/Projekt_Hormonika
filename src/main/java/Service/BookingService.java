@@ -122,7 +122,9 @@ public class BookingService {
 
     public void cancelBookingDB(Booking booking) {
         try {
-            bRepo.cancelBooking(booking);
+            LocalDate endDate = LocalDate.now();
+            bRepo.updateStatus(booking.getId(), Status.CANCELLED, endDate);
+            reload();
         } catch (SQLException e) {
             throw new RuntimeException("Kunne ikke annullere booking", e);
         }
@@ -130,7 +132,10 @@ public class BookingService {
 
     public void finishBookingDB(Booking booking) {
         try {
-            bRepo.finishBooking(booking);
+            LocalDate endDate = LocalDate.now();
+            Status end = Status.COMPLETED;
+            bRepo.updateStatus(booking.getId(), end, endDate);
+            reload();
         } catch (SQLException e) {
             throw new RuntimeException("Kunne ikke afslutte booking", e);
         }

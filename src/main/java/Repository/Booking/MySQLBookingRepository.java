@@ -156,23 +156,6 @@ public class MySQLBookingRepository implements BookingRepository {
         return null;
     }
 
-    public void cancelBooking(Booking booking) throws SQLException {
-        String sql = """
-            UPDATE Booking
-            SET status = 'CANCEL'
-            WHERE id = ?
-        """;
-
-        try (Connection conn = db.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, booking.getId());
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new SQLException("Kunne ikke aflyse tidsbestilling: " + e.getMessage());
-        }
-    }
 
     public void updateStatus(int bookingID, Status status, LocalDate cancelledAt) throws SQLException{
         String sql = """
@@ -186,28 +169,37 @@ public class MySQLBookingRepository implements BookingRepository {
         try (Connection conn = db.getConnection();
         PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status.name());
-            ps.setDate(2, new java.sql.Date(cancelledAt.getDayOfMonth()));
+            ps.setDate(2, java.sql.Date.valueOf(cancelledAt));
             ps.setInt(3, bookingID);
+            ps.executeUpdate();
+        } catch (SQLException e){
+            throw new SQLException("Kunne ikke opdatere status " + status + ": " + e.getMessage());
         }
     }
 
-    public void finishBooking(Booking booking) throws SQLException {
+    public void cancelBooking(Booking booking) throws SQLException{
         String sql = """
-            UPDATE Booking
-            SET status = 'FINISH'
-            WHERE id = ?
+                UPDATE booking
+                SET status = ?
+                WHERE booking.id = ?;
         """;
 
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, Status.CANCELLED.name()); //For at sikre at den tager den rigtige enum
+            ps.setInt(2, booking.getId());
 
-            ps.setInt(1, booking.getId());
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            if (rows == 0){
+                throw new SQLException("Kunne ikke finde bookingen med id: " + booking.getId());
+            }
 
-        } catch (SQLException e) {
-            throw new SQLException("Kunne ikke færdiggøre tidsbestilling: " + e.getMessage());
+        } catch (SQLException e){
+            throw new SQLException("Kunne ikke aflyse tidsbestilling"); //WIP
         }
     }
+
+
 
     public int highestId() throws SQLException {
         String sql = "SELECT COALESCE(MAX(id), 0) AS maxId FROM Booking";
@@ -239,14 +231,7 @@ public class MySQLBookingRepository implements BookingRepository {
             stmt.setString(3, booking.getHaircutType().name());
             stmt.setInt(4, booking.getHairdresserId());
             stmt.setString(5, booking.getDescription());
-
-            String dbStatus = switch (booking.getStatus()) {
-                case ACTIVE -> "ACTIVE";
-                case CANCELLED -> "CANCEL";
-                case COMPLETED -> "FINISH";
-            };
-
-            stmt.setString(6, dbStatus);
+            stmt.setString(6, booking.getStatus().name());
             stmt.setInt(7, booking.getId());
 
             stmt.executeUpdate();
